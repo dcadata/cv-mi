@@ -15,7 +15,8 @@ jobs:
         with:
           python-version: '3.8'
       - run: pip3 install -r requirements.txt
-      - run: python task.py
+      - run: python task.py -r True -c oakland
+      - run: python task.py -r True -c metro
       - name: Commit and push if changed
         run: |-
           git config user.name "Automated"
