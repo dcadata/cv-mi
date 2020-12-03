@@ -93,19 +93,15 @@ class Roller(Downloader):
 
     def _rollup(self, df, drop_cols, roll_cols):
         df = df.drop(columns=drop_cols)
-        rollup = concat([self._add_rolling_averages(df, county, roll_cols) for county in self._counties], sort=False)
+        rollup = concat([_add_rolling_averages(df, county, roll_cols) for county in self._counties], sort=False)
         return rollup
 
-    def _add_rolling_averages(self, df, county, roll_cols):
-        df = df[df['county'] == county]
-        for col in roll_cols:
-            self._add_rolling_average(df, col)
-        return df
 
-    @staticmethod
-    def _add_rolling_average(df, roll_col):
-        df[f'{roll_col}_roll'] = df[roll_col].rolling(7).mean()
-
+def _add_rolling_averages(df, county, roll_cols):
+    df = df[df['county'] == county]
+    for col in roll_cols:
+        df[f'{col}_roll'] = df[col].rolling(7).mean()
+    return df
 
 def _run():
     parser = ArgumentParser()
