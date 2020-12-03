@@ -23,7 +23,7 @@ class Scraper:
         datasets_links = datasets_parent.find_all('a')
 
         for link in datasets_links:
-            if link.__getattribute__('text') and link.get('href'):
+            if link.get('href'):
                 link_info[link.text] = 'https://www.michigan.gov' + link['href']
 
         return link_info
