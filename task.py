@@ -16,7 +16,7 @@ class Scraper:
 
     @property
     def _link_info(self):
-        links = {}
+        link_info = {}
 
         datasets_header = self._soup.find('h5', text=lambda x: str(x).strip().startswith('Public Use Datasets'))
         datasets_parent = datasets_header.find_parent()
@@ -24,14 +24,14 @@ class Scraper:
 
         for link in datasets_links:
             if link.__getattribute__('text') and link.get('href'):
-                links[link.text] = 'https://www.michigan.gov' + link['href']
+                link_info[link.text] = 'https://www.michigan.gov' + link['href']
 
-        return links
+        return link_info
 
 
 class Downloader(Scraper):
     def __init__(self):
-        self.links = None
+        self._links = None
         self._cases = None
         self._tests = None
 
@@ -42,7 +42,7 @@ class Downloader(Scraper):
         self._tests = _read('Diagnostic Tests by Result and County')
 
     def download_remote_files(self):
-        self.links = self._link_info.copy()
+        self._links = self._link_info.copy()
 
         self._cases = self._download_remote_excel_file('Cases and Deaths by County by Date')
         self._tests = self._download_remote_excel_file('Diagnostic Tests by Result and County')
@@ -67,9 +67,9 @@ class Downloader(Scraper):
         return df
 
     def _get_remote_excel_file_url(self, link_text):
-        url = self.links.get('link_text')
+        url = self._links.get('link_text')
         if not url:
-            for text, link in self.links.items():
+            for text, link in self._links.items():
                 if text.startswith(link_text):
                     return link
         return url
