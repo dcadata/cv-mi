@@ -82,28 +82,25 @@ class Roller(Downloader):
 
     @property
     def cases_rollup(self):
-        def _add_rolling_averages(df, county):
-            df = df[df['county'] == county]
-            self._add_rolling_average(df, 'cases')
-            self._add_rolling_average(df, 'deaths')
-            return df
-
-        cases = self._cases.drop(columns=['cases_cumulative', 'deaths_cumulative'])
-        confirmed = cases[cases['case_status'] == 'Confirmed']
-        rollup = concat([_add_rolling_averages(confirmed, county) for county in self._counties], sort=False)
-        return rollup
+        confirmed = self._cases[self._cases['case_status'] == 'Confirmed']
+        return self._rollup(confirmed, ['cases_cumulative', 'deaths_cumulative'], ['cases', 'deaths'])
 
     @property
     def tests_rollup(self):
-        def _add_rolling_averages(df, county):
-            df = df[df['county'] == county]
-            self._add_rolling_average(df, 'positive_rate')
-            return df
-
-        tests = self._tests.drop(columns=['negative'])
+        tests = self._tests.copy()
         tests['positive_rate'] = tests['positive'] / tests['total']
-        rollup = concat([_add_rolling_averages(tests, county) for county in self._counties], sort=False)
+        return self._rollup(tests, ['negative'], ['positive_rate'])
+
+    def _rollup(self, df, drop_cols, roll_cols):
+        df = df.drop(columns=drop_cols)
+        rollup = concat([self._add_rolling_averages(df, county, roll_cols) for county in self._counties], sort=False)
         return rollup
+
+    def _add_rolling_averages(self, df, county, roll_cols):
+        df = df[df['county'] == county]
+        for col in roll_cols:
+            self._add_rolling_average(df, col)
+        return df
 
     @staticmethod
     def _add_rolling_average(df, roll_col):
