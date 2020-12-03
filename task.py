@@ -57,9 +57,6 @@ class Downloader(Scraper):
         cols['MessageDate'] = 'date'
         df = df.rename(columns=cols)
 
-        if 'updated' in df.columns:
-            df = df.drop(columns=['updated'])
-
         df.date = df.date.apply(lambda x: to_datetime(x).date())
 
         df.to_csv(DATA_DIR + link_text + '.csv', index=False)
@@ -81,20 +78,20 @@ class Roller(Downloader):
         return self._cases['county'].unique()
 
     @property
-    def cases_rollup(self):
-        confirmed = self._cases[self._cases['case_status'] == 'Confirmed']
-        return self._rollup(confirmed, ['cases_cumulative', 'deaths_cumulative'], ['cases', 'deaths'])
+    def cases_rolling(self):
+        return self._create_df_with_rolling(self._cases, ['cases_cumulative', 'deaths_cumulative'], ['cases', 'deaths'])
 
     @property
-    def tests_rollup(self):
+    def tests_rolling(self):
         tests = self._tests.copy()
         tests['positive_rate'] = tests['positive'] / tests['total']
-        return self._rollup(tests, ['negative'], ['positive_rate'])
+        return self._create_df_with_rolling(tests, ['negative'], ['positive_rate'])
 
-    def _rollup(self, df, drop_cols, roll_cols):
+    def _create_df_with_rolling(self, df, drop_cols, roll_cols):
         df = df.drop(columns=drop_cols)
-        rollup = concat([_add_rolling_averages(df, county, roll_cols) for county in self._counties], sort=False)
-        return rollup
+        if 'updated' in df.columns:
+            df = df.drop(columns='updated')
+        return concat([_add_rolling_averages(df, county, roll_cols) for county in self._counties], sort=False)
 
 
 def _add_rolling_averages(df, county, roll_cols):
@@ -114,8 +111,8 @@ def _run():
     else:
         roller.read_files_from_disk()
 
-    roller.cases_rollup.to_csv(DATA_DIR + 'cases_rollup.csv', index=False)
-    roller.tests_rollup.to_csv(DATA_DIR + 'tests_rollup.csv', index=False)
+    roller.cases_rolling.to_csv(DATA_DIR + 'cases_roll.csv', index=False)
+    roller.tests_rolling.to_csv(DATA_DIR + 'tests_roll.csv', index=False)
 
 def main():
     try:
