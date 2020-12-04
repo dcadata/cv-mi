@@ -19,8 +19,7 @@ class Scraper:
         link_info = {}
 
         datasets_header = self._soup.find('h5', text=lambda x: str(x).strip().startswith('Public Use Datasets'))
-        datasets_parent = datasets_header.find_parent()
-        datasets_links = datasets_parent.find_all('a')
+        datasets_links = datasets_header.find_parent().find_all('a')
 
         for link in datasets_links:
             if link.get('href'):
