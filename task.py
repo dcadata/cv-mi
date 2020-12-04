@@ -57,9 +57,7 @@ class Downloader(Scraper):
         df = df.rename(columns=cols)
 
         df.date = df.date.apply(lambda x: to_datetime(x).date())
-
         df.to_csv(DATA_DIR + link_text + '.csv', index=False)
-
         return df
 
     def _get_remote_excel_file_url(self, link_text):
