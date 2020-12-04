@@ -56,7 +56,7 @@ class Downloader(Scraper):
         cols['MessageDate'] = 'date'
         df = df.rename(columns=cols)
 
-        df.date = df.date.apply(lambda x: to_datetime(x).date())
+        df['date'] = df['date'].apply(lambda x: to_datetime(x).date())
         df.to_csv(DATA_DIR + link_text + '.csv', index=False)
         return df
 
