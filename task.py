@@ -115,9 +115,7 @@ def main():
     try:
         _run()
     except Exception as exc:
-        exc_text = '\n\n'.join((str(exc), format_exc()))
-        open('exception.txt', 'w').write(exc_text)
-        raise Exception(exc_text)
+        open('exception.txt', 'w').write('\n\n'.join((str(exc), format_exc())))
 
 
 if __name__ == '__main__':
