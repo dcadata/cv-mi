@@ -47,7 +47,7 @@ class Downloader(Scraper):
         self._tests = self._download_remote_excel_file('Diagnostic Tests by Result and County')
 
     def _download_remote_excel_file(self, link_text):
-        df = read_excel(self._get_remote_excel_file_url(link_text))
+        df = read_excel(self._get_remote_excel_file_url(link_text), engine='openpyxl')
 
         cols = {}
         for col in df.columns:
