@@ -2,4 +2,4 @@ requests
 lxml
 beautifulsoup4
 pandas
-xlrd
+xlrd==1.2.0
