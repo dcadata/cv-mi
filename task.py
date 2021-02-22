@@ -1,8 +1,8 @@
 from argparse import ArgumentParser
 from traceback import format_exc
-from requests import get
 from bs4 import BeautifulSoup as BS
 from pandas import read_csv, read_excel, to_datetime, concat
+from requests import get
 
 
 DATA_DIR = 'data/'
