@@ -100,6 +100,7 @@ def _add_rolling_averages(df, county, roll_cols):
 def _run():
     parser = ArgumentParser()
     parser.add_argument('-r', type=bool, help='refresh from source?')
+    parser.add_argument('-m', type=bool, help='view message only')
     args = parser.parse_args()
 
     roller = Roller()
@@ -108,8 +109,14 @@ def _run():
     else:
         roller.read_files_from_disk()
 
-    roller.cases_rolling.to_csv(DATA_DIR + 'cases_roll.csv', index=False)
-    roller.tests_rolling.to_csv(DATA_DIR + 'tests_roll.csv', index=False)
+    tests_rolling = roller.tests_rolling.copy()
+    if args.m:
+        tr = tests_rolling[tests_rolling.county == 'Oakland'].tail(1).reset_index(drop=True).to_dict('records')[0]
+        for key in ('date', 'positive_rate', 'positive_rate_roll'):
+            print(f'{key}: {tr[key]}')
+    else:
+        roller.cases_rolling.to_csv(DATA_DIR + 'cases_roll.csv', index=False)
+        tests_rolling.to_csv(DATA_DIR + 'tests_roll.csv', index=False)
 
 def main():
     try:
