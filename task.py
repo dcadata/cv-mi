@@ -92,7 +92,7 @@ class Roller(Downloader):
 
 
 def _add_rolling_averages(df, county, roll_cols):
-    df = df[df['county'] == county]
+    df = df[df['county'] == county].copy()
     for col in roll_cols:
         df[f'{col}_roll'] = df[col].rolling(7).mean()
     return df
