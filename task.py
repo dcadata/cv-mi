@@ -97,7 +97,7 @@ def _add_rolling_averages(df, county, roll_cols):
     return df
 
 
-def _run():
+def run():
     parser = ArgumentParser()
     parser.add_argument('-r', type=bool, help='refresh from source?')
     parser.add_argument('-m', type=bool, help='view message only')
@@ -121,10 +121,10 @@ def _run():
 
 def main():
     try:
-        _run()
+        run()
     except Exception as exc:
         open('exception.txt', 'w').write('\n\n'.join((str(exc), format_exc())))
 
 
 if __name__ == '__main__':
-    main()
+    run()
