@@ -1,9 +1,8 @@
 from argparse import ArgumentParser
 from traceback import format_exc
+import pandas as pd
 from bs4 import BeautifulSoup as BS
-from pandas import read_csv, read_excel, to_datetime, concat
 from requests import get
-
 
 DATA_DIR = 'data/'
 
@@ -35,7 +34,7 @@ class Downloader(Scraper):
         self._tests = None
 
     def read_files_from_disk(self):
-        _read = lambda link_text: read_csv(DATA_DIR + link_text + '.csv')
+        _read = lambda link_text: pd.read_csv(DATA_DIR + link_text + '.csv')
 
         self._cases = _read('Cases and Deaths by County by Date')
         self._tests = _read('Diagnostic Tests by Result and County')
@@ -47,7 +46,7 @@ class Downloader(Scraper):
         self._tests = self._download_remote_excel_file('Diagnostic Tests by Result and County')
 
     def _download_remote_excel_file(self, link_text):
-        df = read_excel(self._get_remote_excel_file_url(link_text))
+        df = pd.read_excel(self._get_remote_excel_file_url(link_text))
 
         cols = {}
         for col in df.columns:
@@ -56,7 +55,7 @@ class Downloader(Scraper):
         cols['MessageDate'] = 'date'
         df = df.rename(columns=cols)
 
-        df['date'] = df['date'].apply(lambda x: to_datetime(x).date())
+        df['date'] = df['date'].apply(lambda x: pd.to_datetime(x).date())
         df.to_csv(DATA_DIR + link_text + '.csv', index=False)
         return df
 
@@ -88,7 +87,7 @@ class Roller(Downloader):
         df = df.drop(columns=drop_cols)
         if 'updated' in df.columns:
             df = df.drop(columns='updated')
-        return concat([_add_rolling_averages(df, county, roll_cols) for county in self._counties], sort=False)
+        return pd.concat([_add_rolling_averages(df, county, roll_cols) for county in self._counties], sort=False)
 
 
 def _add_rolling_averages(df, county, roll_cols):
@@ -96,6 +95,7 @@ def _add_rolling_averages(df, county, roll_cols):
     for col in roll_cols:
         df[f'{col}_roll'] = df[col].rolling(7).mean()
     return df
+
 
 def _run():
     parser = ArgumentParser()
@@ -117,6 +117,7 @@ def _run():
     else:
         roller.cases_rolling.to_csv(DATA_DIR + 'cases_roll.csv', index=False)
         tests_rolling.to_csv(DATA_DIR + 'tests_roll.csv', index=False)
+
 
 def main():
     try:
