@@ -109,15 +109,14 @@ def run():
         roller.make_request_to_main_page()
         roller.download_remote_files()
         roller.process_and_save_remote_files()
+        roller.cases_rolling.to_csv('cases_roll.csv', index=False)
+        roller.tests_rolling.to_csv('tests_roll.csv', index=False)
 
-    tests_rolling = roller.tests_rolling.copy()
     if args.m:
+        tests_rolling = roller.tests_rolling.copy()
         tr = tests_rolling[tests_rolling.county == 'Oakland'].tail(1).reset_index(drop=True).to_dict('records')[0]
         for key in ('date', 'positive_rate', 'positive_rate_roll'):
             print(f'{key}: {tr[key]}')
-    else:
-        roller.cases_rolling.to_csv('cases_roll.csv', index=False)
-        tests_rolling.to_csv('tests_roll.csv', index=False)
 
 
 def main():
