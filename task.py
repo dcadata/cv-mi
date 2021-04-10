@@ -63,14 +63,6 @@ class Processor(Scraper):
 
 class Roller(Processor):
     @property
-    def _cases(self):
-        return pd.read_csv('cases.csv')
-
-    @property
-    def _tests(self):
-        return pd.read_csv('tests.csv')
-
-    @property
     def cases_rolling(self):
         return self._create_df_with_rolling(self._cases, ['cases_cumulative', 'deaths_cumulative'], ['cases', 'deaths'])
 
@@ -79,6 +71,14 @@ class Roller(Processor):
         tests = self._tests.copy()
         tests['positive_rate'] = tests['positive'] / tests['total']
         return self._create_df_with_rolling(tests, ['negative'], ['positive_rate'])
+
+    @property
+    def _cases(self):
+        return pd.read_csv('cases.csv')
+
+    @property
+    def _tests(self):
+        return pd.read_csv('tests.csv')
 
     @property
     def _counties(self):
