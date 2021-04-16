@@ -1,6 +1,5 @@
 from argparse import ArgumentParser
 from time import sleep
-from traceback import format_exc
 import pandas as pd
 from bs4 import BeautifulSoup as BS
 from requests import get
@@ -98,7 +97,7 @@ class Roller(Processor):
         return df
 
 
-def run():
+def main():
     parser = ArgumentParser()
     parser.add_argument('-r', type=bool, help='refresh from source?')
     parser.add_argument('-m', type=bool, help='view message only')
@@ -119,12 +118,5 @@ def run():
             print(f'{key}: {tr[key]}')
 
 
-def main():
-    try:
-        run()
-    except Exception as exc:
-        open('exception.txt', 'w').write('\n\n'.join((str(exc), format_exc())))
-
-
 if __name__ == '__main__':
-    run()
+    main()
