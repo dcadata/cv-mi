@@ -1,4 +1,3 @@
-from traceback import format_exc
 from argparse import ArgumentParser
 from time import sleep
 import pandas as pd
@@ -120,7 +119,4 @@ def main():
 
 
 if __name__ == '__main__':
-    try:
-        main()
-    except Exception as exc:
-        open('errors.txt', 'w').write('\n\n'.join((str(exc), format_exc())))
+    main()
