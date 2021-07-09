@@ -61,6 +61,10 @@ class Processor(Scraper):
 
 
 class Roller(Processor):
+    def save_rolling(self):
+        self.cases_rolling.to_csv('cases_roll.csv', index=False)
+        self.tests_rolling.to_csv('tests_roll.csv', index=False)
+
     @property
     def cases_rolling(self):
         return self._create_df_with_rolling(self._cases, ['cases_cumulative', 'deaths_cumulative'], ['cases', 'deaths'])
@@ -100,22 +104,21 @@ class Roller(Processor):
 def main():
     parser = ArgumentParser()
     parser.add_argument('-r', type=bool, help='refresh from source?')
-    parser.add_argument('-m', type=bool, help='view message only')
     args = parser.parse_args()
 
     roller = Roller()
+
     if args.r:
         roller.make_request_to_main_page()
         roller.download_remote_files()
         roller.process_and_save_remote_files()
-        roller.cases_rolling.to_csv('cases_roll.csv', index=False)
-        roller.tests_rolling.to_csv('tests_roll.csv', index=False)
+        roller.save_rolling()
+        return
 
-    if args.m:
-        tests_rolling = roller.tests_rolling.copy()
-        tr = tests_rolling[tests_rolling.county == 'Oakland'].tail(1).reset_index(drop=True).to_dict('records')[0]
-        for key in ('date', 'positive_rate', 'positive_rate_roll'):
-            print(f'{key}: {tr[key]}')
+    tests_rolling = pd.read_csv('tests_roll.csv')
+    tr = tests_rolling[tests_rolling.county == 'Oakland'].tail(1).reset_index(drop=True).to_dict('records')[0]
+    for key in ('date', 'positive_rate', 'positive_rate_roll'):
+        print(f'{key}: {tr[key]}')
 
 
 if __name__ == '__main__':
