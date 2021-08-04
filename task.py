@@ -117,8 +117,8 @@ def main():
 
     tests_rolling = pd.read_csv('tests_roll.csv')
     tr = tests_rolling[tests_rolling.county == 'Oakland'].tail(1).reset_index(drop=True).to_dict('records')[0]
-    for key in ('date', 'positive_rate', 'positive_rate_roll'):
-        print(f'{key}: {tr[key]}')
+    text = '\n'.join(f'{key}: {tr[key]}' for key in ('date', 'positive_rate', 'positive_rate_roll'))
+    print(text)
 
 
 if __name__ == '__main__':
