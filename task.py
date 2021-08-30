@@ -1,7 +1,7 @@
 from argparse import ArgumentParser
 from time import sleep
 import pandas as pd
-from bs4 import BeautifulSoup as BS
+from bs4 import BeautifulSoup
 from requests import get
 
 
@@ -23,7 +23,7 @@ class Scraper:
             sleep(2)
 
     def _get_links_to_remote_files(self):
-        soup = BS(open(self._page_filepath).read(), 'lxml')
+        soup = BeautifulSoup(open(self._page_filepath).read(), 'lxml')
         datasets_links = soup.find('h5', text=lambda x: str(x).strip().startswith(
             'Public Use Datasets')).find_parent().find_all('a')
 
