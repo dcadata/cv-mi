@@ -50,9 +50,7 @@ class Processor(Scraper):
 
     @staticmethod
     def _modify_dataframe(df):
-        cols = {}
-        for col in df.columns:
-            cols[col] = col.lower().replace('.', '_')
+        cols = dict((col, col.lower().replace('.', '_')) for col in df.columns)
         cols['MessageDate'] = 'date'
         df = df.rename(columns=cols)
 
