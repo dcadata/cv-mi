@@ -114,8 +114,11 @@ class Runner(Roller):
 
     def _generate_text_to_display(self):
         tests_roll = pd.read_csv('tests_roll.csv')
-        county = tests_roll[tests_roll.county == 'Oakland'].tail(1).to_dict('records')[0]
-        self._text_to_display = '\n'.join(f'{key}: {round(county[key], 2)}' for key in (
+        county = tests_roll[tests_roll.county == 'Oakland'].tail(1)
+        for col in ('positive_rate', 'positive_rate_roll'):
+            county[col] = county[col].apply(lambda x: round(x, 2))
+        county = county.to_dict('records')[0]
+        self._text_to_display = '\n'.join(f'{field}: {county[field]}' for field in (
             'date', 'positive_rate', 'positive_rate_roll'))
 
     def _commit_and_push(self):
