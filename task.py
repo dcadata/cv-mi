@@ -1,7 +1,6 @@
 from datetime import datetime
 from os import system
 from time import sleep
-from traceback import format_exc
 import pandas as pd
 from bs4 import BeautifulSoup
 from requests import get
@@ -132,10 +131,7 @@ git push
 
 
 def main():
-    try:
-        Runner().run()
-    except Exception as exc:
-        open('exception.txt', 'w').write('\n\n'.join((str(exc), format_exc())))
+    Runner().run()
 
 
 if __name__ == '__main__':
