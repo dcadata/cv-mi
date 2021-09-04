@@ -1,4 +1,5 @@
-from argparse import ArgumentParser
+from datetime import datetime
+from os import system
 from time import sleep
 import pandas as pd
 from bs4 import BeautifulSoup
@@ -99,24 +100,38 @@ class Roller(Processor):
         return df
 
 
+class Runner(Roller):
+    def run(self):
+        self.refresh_and_save()
+        self._generate_text_to_display()
+        self._commit_and_push()
+
+    def refresh_and_save(self):
+        self.make_request_to_main_page()
+        self.download_remote_files()
+        self.process_and_save_remote_files()
+        self.save_rolling()
+
+    def _generate_text_to_display(self):
+        tests_roll = pd.read_csv('tests_roll.csv')
+        county = tests_roll[tests_roll.county == 'Oakland'].tail(1).to_dict('records')[0]
+        self._text_to_display = '\n'.join(f'{key}: {round(county[key], 2)}' for key in (
+            'date', 'positive_rate', 'positive_rate_roll'))
+
+    def _commit_and_push(self):
+        commands = '''
+git config user.name "Automated"
+git config user.email "actions@users.noreply.github.com"
+git add -A
+git commit -m "Latest data: {0}\n\n{1}" || exit 0
+git push
+'''.strip().format(datetime.utcnow().strftime('%d %B %Y %H:%M'), self._text_to_display)
+        for command in commands.splitlines():
+            system(command)
+
+
 def main():
-    parser = ArgumentParser()
-    parser.add_argument('-r', type=bool, help='refresh from source?')
-    args = parser.parse_args()
-
-    roller = Roller()
-
-    if args.r:
-        roller.make_request_to_main_page()
-        roller.download_remote_files()
-        roller.process_and_save_remote_files()
-        roller.save_rolling()
-        return
-
-    tests_rolling = pd.read_csv('tests_roll.csv')
-    tr = tests_rolling[tests_rolling.county == 'Oakland'].tail(1).reset_index(drop=True).to_dict('records')[0]
-    text = '\n'.join(f'{key}: {tr[key]}' for key in ('date', 'positive_rate', 'positive_rate_roll'))
-    print(text)
+    Runner().run()
 
 
 if __name__ == '__main__':
