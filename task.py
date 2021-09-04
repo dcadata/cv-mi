@@ -104,6 +104,7 @@ class Runner(Roller):
     def run(self):
         self.refresh_and_save()
         self._generate_text_to_display()
+        return
         self._commit_and_push()
 
     def refresh_and_save(self):
