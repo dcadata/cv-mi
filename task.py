@@ -102,11 +102,11 @@ class Roller(Processor):
 
 class Runner(Roller):
     def run(self):
-        self.refresh_and_save()
+        self._refresh_and_save()
         self._generate_text_to_display()
         self._commit_and_push()
 
-    def refresh_and_save(self):
+    def _refresh_and_save(self):
         self.make_request_to_main_page()
         self.download_remote_files()
         self.process_and_save_remote_files()
