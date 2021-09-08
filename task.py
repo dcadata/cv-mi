@@ -113,7 +113,7 @@ class Runner(Roller):
         self.save_rolling()
 
     def _generate_text_to_display(self):
-        tests_roll = pd.read_csv('tests_roll.csv')
+        tests_roll = self.tests_rolling.copy()
         county = tests_roll[tests_roll.county == 'Oakland'].tail(1)
         for col in ('positive_rate', 'positive_rate_roll'):
             county[col] = county[col].apply(lambda x: round(x, 2))
