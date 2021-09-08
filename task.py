@@ -124,9 +124,9 @@ def main():
 git config user.name "Automated"
 git config user.email "actions@users.noreply.github.com"
 git add -A
-git commit -m "TEST" || exit 0
+git commit -m "{text_to_display}" || exit 0
 git push
-'''.strip()
+'''.strip().format(text_to_display=runner.text_to_display)
     for command in commands.splitlines():
         system(command)
 
