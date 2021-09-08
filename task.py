@@ -1,4 +1,3 @@
-from datetime import datetime
 from os import system
 from time import sleep
 import pandas as pd
@@ -125,9 +124,9 @@ def main():
 git config user.name "Automated"
 git config user.email "actions@users.noreply.github.com"
 git add -A
-git commit -m "Latest data: {0}\n\n{1}" || exit 0
+git commit -m "{text_to_display}" || exit 0
 git push
-'''.strip().format(datetime.utcnow().strftime('%d %B %Y %H:%M'), runner.text_to_display)
+'''.strip().format(text_to_display=runner.text_to_display)
     for command in commands.splitlines():
         system(command)
 
