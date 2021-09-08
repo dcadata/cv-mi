@@ -101,40 +101,35 @@ class Roller(Processor):
 
 
 class Runner(Roller):
-    def run(self):
-        self._refresh_and_save()
-        self._generate_text_to_display()
-        self._commit_and_push()
-
-    def _refresh_and_save(self):
+    def refresh_and_save(self):
         self.make_request_to_main_page()
         self.download_remote_files()
         self.process_and_save_remote_files()
         self.save_rolling()
 
-    def _generate_text_to_display(self):
+    @property
+    def text_to_display(self):
         tests_roll = self.tests_rolling.copy()
         county = tests_roll[tests_roll.county == 'Oakland'].tail(1)
         for col in ('positive_rate', 'positive_rate_roll'):
             county[col] = county[col].apply(lambda x: round(x, 2))
         county = county.to_dict('records')[0]
-        self._text_to_display = '\n'.join(f'{field}: {county[field]}' for field in (
-            'date', 'positive_rate', 'positive_rate_roll'))
+        return '\n'.join(f'{field}: {county[field]}' for field in ('date', 'positive_rate', 'positive_rate_roll'))
 
-    def _commit_and_push(self):
-        commands = '''
+
+def main():
+    runner = Runner()
+    runner.refresh_and_save()
+
+    commands = '''
 git config user.name "Automated"
 git config user.email "actions@users.noreply.github.com"
 git add -A
 git commit -m "Latest data: {0}\n\n{1}" || exit 0
 git push
-'''.strip().format(datetime.utcnow().strftime('%d %B %Y %H:%M'), self._text_to_display)
-        for command in commands.splitlines():
-            system(command)
-
-
-def main():
-    Runner().run()
+'''.strip().format(datetime.utcnow().strftime('%d %B %Y %H:%M'), runner.text_to_display)
+    for command in commands.splitlines():
+        system(command)
 
 
 if __name__ == '__main__':
