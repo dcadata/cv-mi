@@ -1,4 +1,3 @@
-from os import system
 from time import sleep
 import pandas as pd
 from bs4 import BeautifulSoup
@@ -119,16 +118,6 @@ class Runner(Roller):
 def main():
     runner = Runner()
     runner.refresh_and_save()
-
-    commands = '''
-git config user.name "Automated"
-git config user.email "actions@users.noreply.github.com"
-git add -A
-git commit -m "{text_to_display}" || exit 0
-git push
-'''.strip().format(text_to_display=runner.text_to_display)
-    for command in commands.splitlines():
-        system(command)
 
 
 if __name__ == '__main__':
