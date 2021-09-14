@@ -18,7 +18,7 @@ class Scraper:
         links = self._get_links_to_remote_files()
         for fn in (self._cases_filename, self._tests_filename):
             r = get(links[fn.rsplit('.', 1)[0]])
-            open('data/' + fn, 'wb').write(r.content)
+            open('files/' + fn, 'wb').write(r.content)
             sleep(2)
 
     def _get_links_to_remote_files(self):
@@ -44,7 +44,7 @@ class Processor(Scraper):
         tests.to_csv('tests.csv', index=False)
 
     def _read_local_excel_files(self, fn):
-        df = pd.read_excel('data/' + fn)
+        df = pd.read_excel('files/' + fn)
         return self._modify_dataframe(df)
 
     @staticmethod
