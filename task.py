@@ -5,14 +5,16 @@ from requests import get
 
 
 class Scraper:
-    _page_filepath = 'data/page.html'
     _cases_filename = 'Cases and Deaths by County by Date of Onset of Symptoms and Date of Death.xlsx'
     _tests_filename = 'Diagnostic Tests by Result and County.xlsx'
 
+    def __init__(self):
+        self._page_text = None
+
     def make_request_to_main_page(self):
         r = get('https://www.michigan.gov/coronavirus/0,9753,7-406-98163_98173---,00.html')
-        open(self._page_filepath, 'wb').write(r.content)
         sleep(2)
+        self._page_text = r.text
 
     def download_remote_files(self):
         links = self._get_links_to_remote_files()
@@ -22,7 +24,7 @@ class Scraper:
             sleep(2)
 
     def _get_links_to_remote_files(self):
-        soup = BeautifulSoup(open(self._page_filepath).read(), 'lxml')
+        soup = BeautifulSoup(self._page_text, 'lxml')
         datasets_links = soup.find('h5', text=lambda x: str(x).strip().startswith(
             'Public Use Datasets')).find_parent().find_all('a')
 
