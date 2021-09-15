@@ -110,11 +110,15 @@ class Runner(Roller):
     @property
     def text_to_display(self):
         tests_roll = self.tests_rolling.copy()
-        county = tests_roll[tests_roll.county == 'Oakland'].tail(1)
+        df = tests_roll.loc[tests_roll.county.isin({'Oakland', 'Wayne', 'Macomb', 'Washtenaw'}), [
+            'county', 'date', 'positive_rate', 'positive_rate_roll']].drop_duplicates(subset=['county'], keep='last')
         for col in ('positive_rate', 'positive_rate_roll'):
-            county[col] = county[col].apply(lambda x: round(x, 2))
-        county = county.to_dict('records')[0]
-        return '\n'.join(f'{field}: {county[field]}' for field in ('date', 'positive_rate', 'positive_rate_roll'))
+            df[col] = df[col].apply(lambda x: round(x, 2))
+        records = df.to_dict('records')
+        date = records[0]['date']
+        data = '\n'.join('{county}: {positive_rate} / {positive_rate_roll}'.format(
+            **record) for record in records)
+        return '\n'.join((date, data))
 
 
 def main():
