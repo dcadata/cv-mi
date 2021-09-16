@@ -3,8 +3,8 @@ from os import environ
 from smtplib import SMTP_SSL
 from time import sleep
 import pandas as pd
+import requests
 from bs4 import BeautifulSoup
-from requests import get
 
 
 class Scraper:
@@ -13,18 +13,25 @@ class Scraper:
 
     def __init__(self):
         self._page_text = None
+        self._session = None
 
-    def make_request_to_main_page(self):
-        r = get('https://www.michigan.gov/coronavirus/0,9753,7-406-98163_98173---,00.html')
+    def make_requests_and_download(self):
+        self._session = requests.Session()
+        self._make_request_to_main_page()
+        self._download_remote_files()
+        self._session.close()
+
+    def _make_request_to_main_page(self):
+        r = self._session.get('https://www.michigan.gov/coronavirus/0,9753,7-406-98163_98173---,00.html')
         sleep(2)
         self._page_text = r.text
 
-    def download_remote_files(self):
+    def _download_remote_files(self):
         links = self._get_links_to_remote_files()
         for fn in (self._cases_filename, self._tests_filename):
-            r = get(links[fn.rsplit('.', 1)[0]])
-            open('files/' + fn, 'wb').write(r.content)
+            r = self._session.get(links[fn.rsplit('.', 1)[0]])
             sleep(2)
+            open('files/' + fn, 'wb').write(r.content)
 
     def _get_links_to_remote_files(self):
         soup = BeautifulSoup(self._page_text, 'lxml')
@@ -105,8 +112,7 @@ class Roller(Processor):
 
 class Runner(Roller):
     def refresh_and_save(self):
-        self.make_request_to_main_page()
-        self.download_remote_files()
+        self.make_requests_and_download()
         self.process_and_save_remote_files()
         self.save_rolling()
         self._mail_to_self()
