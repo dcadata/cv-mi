@@ -1,3 +1,6 @@
+from email.mime.text import MIMEText
+from os import environ
+from smtplib import SMTP_SSL
 from time import sleep
 import pandas as pd
 from bs4 import BeautifulSoup
@@ -106,19 +109,30 @@ class Runner(Roller):
         self.download_remote_files()
         self.process_and_save_remote_files()
         self.save_rolling()
+        self._mail_to_self()
+
+    def _mail_to_self(self):
+        msg = MIMEText(self._text_to_display)
+        msg['From'] = environ['EMAIL_SENDER']
+        msg['To'] = environ['RECIPIENT']
+        msg['Subject'] = self._date
+
+        server = SMTP_SSL(host='smtp.gmail.com', port=465)
+        server.login(environ['EMAIL_SENDER'], environ['EMAIL_PASSWORD'])
+        server.send_message(msg)
+        server.quit()
 
     @property
-    def text_to_display(self):
+    def _text_to_display(self):
         tests_roll = self.tests_rolling.copy()
         df = tests_roll.loc[tests_roll.county.isin({'Oakland', 'Wayne', 'Macomb', 'Washtenaw'}), [
             'county', 'date', 'positive_rate', 'positive_rate_roll']].drop_duplicates(subset=['county'], keep='last')
         for col in ('positive_rate', 'positive_rate_roll'):
             df[col] = df[col].apply(lambda x: round(x, 2))
         records = df.to_dict('records')
-        date = records[0]['date']
-        data = '\n'.join('{county}: {positive_rate} / {positive_rate_roll}'.format(
-            **record) for record in records)
-        return '\n'.join((date, data))
+        self._date = records[0]['date']
+        text = '\n'.join('{county}: {positive_rate} / {positive_rate_roll}'.format(**record) for record in records)
+        return text
 
 
 def main():
