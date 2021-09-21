@@ -115,9 +115,8 @@ class Runner(Roller):
         self.make_requests_and_download()
         self.process_and_save_remote_files()
         self.save_rolling()
-        self._mail_to_self()
 
-    def _mail_to_self(self):
+    def mail_to_self(self):
         msg = MIMEText(self._text_to_display)
         msg['From'] = environ['EMAIL_SENDER']
         msg['To'] = environ['RECIPIENT']
@@ -144,6 +143,7 @@ class Runner(Roller):
 def main():
     runner = Runner()
     runner.refresh_and_save()
+    runner.mail_to_self()
 
 
 if __name__ == '__main__':
