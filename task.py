@@ -133,10 +133,10 @@ class Runner(Roller):
         df = tests_roll.loc[tests_roll.county.isin({'Oakland', 'Wayne', 'Macomb', 'Washtenaw'}), [
             'county', 'date', 'positive_rate', 'positive_rate_roll']].drop_duplicates(subset=['county'], keep='last')
         for col in ('positive_rate', 'positive_rate_roll'):
-            df[col] = df[col].apply(lambda x: round(x, 2))
+            df[col] = df[col].apply(lambda x: round(x * 100, 1))
         records = df.to_dict('records')
         self._date = records[0]['date']
-        text = '\n'.join('{county}: {positive_rate} / {positive_rate_roll}'.format(**record) for record in records)
+        text = '\n'.join('{county}: {positive_rate}% ({positive_rate_roll}% 7d rolling)'.format(**i) for i in records)
         return text
 
 
