@@ -1,10 +1,8 @@
-from email.mime.text import MIMEText
-from os import environ
-from smtplib import SMTP_SSL
 from time import sleep
 import pandas as pd
 import requests
 from bs4 import BeautifulSoup
+import mailer
 
 
 class Scraper:
@@ -111,39 +109,32 @@ class Roller(Processor):
 
 
 class Runner(Roller):
+    def __init__(self):
+        super().__init__()
+        self.date = None
+
     def refresh_and_save(self):
         self.make_requests_and_download()
         self.process_and_save_remote_files()
         self.save_rolling()
 
-    def mail_to_self(self):
-        msg = MIMEText(self._text_to_display)
-        msg['From'] = environ['EMAIL_SENDER']
-        msg['To'] = environ['RECIPIENT']
-        msg['Subject'] = self._date
-
-        server = SMTP_SSL(host='smtp.gmail.com', port=465)
-        server.login(environ['EMAIL_SENDER'], environ['EMAIL_PASSWORD'])
-        server.send_message(msg)
-        server.quit()
-
-    @property
-    def _text_to_display(self):
+    def create_message(self):
         tests_roll = self.tests_rolling.copy()
         df = tests_roll.loc[tests_roll.county.isin({'Oakland', 'Wayne', 'Macomb', 'Washtenaw'}), [
             'county', 'date', 'positive_rate', 'positive_rate_roll']].drop_duplicates(subset=['county'], keep='last')
         for col in ('positive_rate', 'positive_rate_roll'):
             df[col] = df[col].apply(lambda x: round(x * 100, 1))
         records = df.to_dict('records')
-        self._date = records[0]['date']
-        text = '\n'.join('{county}: {positive_rate}% ({positive_rate_roll}% 7d rolling)'.format(**i) for i in records)
-        return text
+        self.date = records[0]['date']
+        self.message = '\n'.join(
+            '{county}: {positive_rate}% ({positive_rate_roll}% 7d rolling)'.format(**i) for i in records)
 
 
 def main():
     runner = Runner()
     runner.refresh_and_save()
-    runner.mail_to_self()
+    runner.create_message()
+    mailer.send_email(subject=runner.date, body=runner.message)
 
 
 if __name__ == '__main__':
