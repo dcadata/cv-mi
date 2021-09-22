@@ -127,8 +127,7 @@ class Runner(Roller):
             df[col] = df[col].apply(lambda x: round(x * 100, 1))
         records = df.to_dict('records')
         self.date = records[0]['date']
-        self.message = '\n'.join(
-            '{county}: {positive_rate}% ({positive_rate_roll}% 7d rolling)'.format(**i) for i in records)
+        self.message = '\n'.join('{county}: {positive_rate_roll}% (7d)'.format(**i) for i in records)
 
 
 def main():
