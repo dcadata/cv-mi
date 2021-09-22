@@ -112,6 +112,7 @@ class Runner(Roller):
     def __init__(self):
         super().__init__()
         self.date = None
+        self.message = None
 
     def refresh_and_save(self):
         self.make_requests_and_download()
