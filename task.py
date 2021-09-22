@@ -52,8 +52,8 @@ class Processor(Scraper):
         cases = self._read_local_excel_files(self._cases_filename)
         tests = self._read_local_excel_files(self._tests_filename)
 
-        cases.to_csv('cases.csv', index=False)
-        tests.to_csv('tests.csv', index=False)
+        cases.to_csv('data/cases.csv', index=False)
+        tests.to_csv('data/tests.csv', index=False)
 
     def _read_local_excel_files(self, fn):
         df = pd.read_excel('files/' + fn)
@@ -71,8 +71,8 @@ class Processor(Scraper):
 
 class Roller(Processor):
     def save_rolling(self):
-        self.cases_rolling.to_csv('cases_roll.csv', index=False)
-        self.tests_rolling.to_csv('tests_roll.csv', index=False)
+        self.cases_rolling.to_csv('data/cases_roll.csv', index=False)
+        self.tests_rolling.to_csv('data/tests_roll.csv', index=False)
 
     @property
     def cases_rolling(self):
@@ -86,11 +86,11 @@ class Roller(Processor):
 
     @property
     def _cases(self):
-        return pd.read_csv('cases.csv')
+        return pd.read_csv('data/cases.csv')
 
     @property
     def _tests(self):
-        return pd.read_csv('tests.csv')
+        return pd.read_csv('data/tests.csv')
 
     @property
     def _counties(self):
