@@ -121,7 +121,7 @@ class Runner(Roller):
 
     def create_message(self):
         tests_roll = self.tests_rolling.copy()
-        df = tests_roll.loc[tests_roll.county.isin({'Oakland', 'Wayne', 'Macomb', 'Washtenaw'}), [
+        df = tests_roll.loc[tests_roll.county.isin({'Oakland', 'Wayne', 'Macomb'}), [
             'county', 'date', 'positive_rate', 'positive_rate_roll']].drop_duplicates(subset=['county'], keep='last')
         for col in ('positive_rate', 'positive_rate_roll'):
             df[col] = df[col].apply(lambda x: round(x * 100, 1))
