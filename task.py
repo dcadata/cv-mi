@@ -2,6 +2,7 @@ from time import sleep
 
 import pandas as pd
 import requests
+import seaborn as sns
 from bs4 import BeautifulSoup
 
 import mailer
@@ -121,6 +122,18 @@ class Runner(Roller):
         self.process_and_save_remote_files()
         self.save_rolling()
 
+    def create_plot(self, county):
+        df = self.tests_rolling.copy()
+        df = df[df.county == county].copy()
+        df.index = df.date
+        df = df.drop(columns=['date'])[['positive_rate', 'positive_rate_roll']]
+        plot = sns.lineplot(data=df, markers=True, palette='deep')
+        fig = plot.get_figure()
+        fig.autofmt_xdate()
+        fig.set_size_inches(12, 8)
+        fig.suptitle(f'Positive rate - {county} County')
+        fig.savefig(f'img/{county.lower()}.png')
+
     def create_message(self):
         tests_roll = self.tests_rolling.copy()
         df = tests_roll.loc[tests_roll.county.isin({'Oakland', 'Wayne', 'Macomb'}), [
@@ -135,6 +148,7 @@ class Runner(Roller):
 def main():
     runner = Runner()
     runner.refresh_and_save()
+    runner.create_plot(county='Oakland')
     runner.create_message()
     mailer.send_email(subject=runner.date, body=runner.message)
 
