@@ -1,9 +1,9 @@
 from time import sleep
 
 import pandas as pd
-import requests
 import seaborn as sns
 from bs4 import BeautifulSoup
+from requests import Session
 
 import mailer
 
@@ -17,7 +17,7 @@ class Scraper:
         self._session = None
 
     def make_requests_and_download(self):
-        self._session = requests.Session()
+        self._session = Session()
         self._make_request_to_main_page()
         self._download_remote_files()
         self._session.close()
@@ -126,7 +126,7 @@ class Runner(Roller):
         df = self.tests_rolling.copy()
         df = df[df.county == county].copy()
         df.index = df.date
-        df = df.drop(columns=['date'])[['positive_rate', 'positive_rate_roll']]
+        df = df[['positive_rate', 'positive_rate_roll']]
         plot = sns.lineplot(data=df, markers=True, palette='deep')
         fig = plot.get_figure()
         fig.autofmt_xdate()
