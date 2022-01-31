@@ -132,8 +132,9 @@ class Runner(Roller):
         fig = plot.get_figure()
         fig.autofmt_xdate()
         fig.set_size_inches(12, 8)
-        fig.suptitle(f'Positive rate - {county} County')
-        fig.savefig(f'img/{county.lower()}.png')
+        label = county if county else '-'.join(counties)
+        fig.suptitle(f'Positive rate - {label}')
+        fig.savefig(f'img/{label.lower()}.png')
 
     def create_message(self):
         tests_roll = self.tests_rolling.copy()
