@@ -116,15 +116,16 @@ class Runner(Roller):
         super().__init__()
         self.date = None
         self.message = None
+        self.tricounty = ('Oakland', 'Wayne', 'Macomb')
 
     def refresh_and_save(self):
         self.make_requests_and_download()
         self.process_and_save_remote_files()
         self.save_rolling()
 
-    def create_plot(self, county):
+    def create_plot(self, county: str = None, counties: tuple = None):
         df = self.tests_rolling.copy()
-        df = df[df.county == county].copy()
+        df = df[df.county.isin((county,) if county else counties)].copy()
         df.index = df.date
         df = df[['positive_rate', 'positive_rate_roll']]
         plot = sns.lineplot(data=df, markers=True, palette='deep')
@@ -136,7 +137,7 @@ class Runner(Roller):
 
     def create_message(self):
         tests_roll = self.tests_rolling.copy()
-        df = tests_roll.loc[tests_roll.county.isin({'Oakland', 'Wayne', 'Macomb'}), [
+        df = tests_roll.loc[tests_roll.county.isin(self.tricounty), [
             'county', 'date', 'positive_rate', 'positive_rate_roll']].drop_duplicates(subset=['county'], keep='last')
         for col in ('positive_rate', 'positive_rate_roll'):
             df[col] = df[col].apply(lambda x: round(x * 100, 1))
@@ -149,6 +150,7 @@ def main():
     runner = Runner()
     runner.refresh_and_save()
     runner.create_plot(county='Oakland')
+    runner.create_plot(counties=runner.tricounty)
     runner.create_message()
     mailer.send_email(subject=runner.date, body=runner.message)
 
