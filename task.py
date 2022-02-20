@@ -151,7 +151,6 @@ def main():
     runner = Runner()
     runner.refresh_and_save()
     runner.create_plot(county='Oakland')
-    runner.create_plot(counties=runner.tricounty)
     runner.create_message()
     mailer.send_email(subject=runner.date, body=runner.message)
 
