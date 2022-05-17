@@ -9,10 +9,9 @@ import mailer
 
 
 class Scraper:
-    _cases_filename = 'Cases and Deaths by County by Date of Onset of Symptoms and Date of Death.xlsx'
-    _tests_filename = 'Diagnostic Tests by Result and County.xlsx'
-
     def __init__(self):
+        self._cases_filename = 'Cases and Deaths by County by Date of Onset of Symptoms and Date of Death.xlsx'
+        self._tests_filename = 'Diagnostic Tests by Result and County.xlsx'
         self._page_text = None
         self._session = None
 
