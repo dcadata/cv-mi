@@ -3,7 +3,7 @@ from os import environ
 from smtplib import SMTP_SSL
 
 
-def send_email(subject, body):
+def send_email(subject: str, body: str):
     msg = MIMEText(body)
     msg['Subject'] = subject
     msg['From'] = environ['EMAIL_SENDER']
