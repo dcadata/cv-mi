@@ -47,13 +47,50 @@ class Scraper:
         return links
 
 
-class Processor(Scraper):
-    def process_and_save_remote_files(self):
+class Roller(Scraper):
+    def __init__(self):
+        super().__init__()
+        self.date = None
+        self.message = None
+        self.tricounty = ('Oakland', 'Wayne', 'Macomb')
+
+    def refresh_and_save(self):
+        self.make_requests_and_download()
+        self._process_and_save_remote_files()
+        self._save_rolling()
+
+    def create_plot(self, county: str = None, counties: tuple = None):
+        df = self._tests_rolling.copy()
+        df = df[df.county.isin((county,) if county else counties)].copy()
+        df.index = df.date
+        df = df[['positive_rate', 'positive_rate_roll']]
+        plot = sns.lineplot(data=df, markers=True, palette='deep')
+        fig = plot.get_figure()
+        fig.autofmt_xdate()
+        fig.set_size_inches(12, 8)
+        label = county if county else '-'.join(counties)
+        fig.suptitle(f'Positive rate - {label}')
+        fig.savefig(f'img/{label.lower()}.png')
+
+    def create_message(self):
+        tests_roll = self._tests_rolling.copy()
+        df = tests_roll.loc[tests_roll.county.isin(self.tricounty), [
+            'county', 'date', 'positive_rate', 'positive_rate_roll']].drop_duplicates(subset=['county'], keep='last')
+        for col in ('positive_rate', 'positive_rate_roll'):
+            df[col] = df[col].apply(lambda x: round(x * 100, 1))
+        records = df.to_dict('records')
+        self.date = records[0]['date']
+        self.message = '\n'.join('{county}: {positive_rate_roll}% (7d)'.format(**i) for i in records)
+
+    def _process_and_save_remote_files(self):
         cases = self._read_local_excel_files(self._cases_filename)
         tests = self._read_local_excel_files(self._tests_filename)
-
         cases.to_csv('data/cases.csv', index=False)
         tests.to_csv('data/tests.csv', index=False)
+
+    def _save_rolling(self):
+        self._cases_rolling.to_csv('data/cases_roll.csv', index=False)
+        self._tests_rolling.to_csv('data/tests_roll.csv', index=False)
 
     def _read_local_excel_files(self, fn):
         df = pd.read_excel('files/' + fn)
@@ -68,18 +105,25 @@ class Processor(Scraper):
         df.date = df.date.apply(lambda x: pd.to_datetime(x).date())
         return df
 
+    def _create_df_with_rolling(self, df, drop_cols, roll_cols):
+        df = df.drop(columns=drop_cols)
+        if 'updated' in df.columns:
+            df = df.drop(columns='updated')
+        return pd.concat([self._add_rolling_averages(df, county, roll_cols) for county in self._counties])
 
-class Roller(Processor):
-    def save_rolling(self):
-        self.cases_rolling.to_csv('data/cases_roll.csv', index=False)
-        self.tests_rolling.to_csv('data/tests_roll.csv', index=False)
+    @staticmethod
+    def _add_rolling_averages(df, county, roll_cols):
+        df = df[df['county'] == county].copy()
+        for col in roll_cols:
+            df[f'{col}_roll'] = df[col].rolling(7).mean()
+        return df
 
     @property
-    def cases_rolling(self):
+    def _cases_rolling(self):
         return self._create_df_with_rolling(self._cases, ['cases_cumulative', 'deaths_cumulative'], ['cases', 'deaths'])
 
     @property
-    def tests_rolling(self):
+    def _tests_rolling(self):
         tests = self._tests.copy()
         tests['positive_rate'] = tests['positive'] / tests['total']
         return self._create_df_with_rolling(tests, ['negative'], ['positive_rate'])
@@ -96,62 +140,13 @@ class Roller(Processor):
     def _counties(self):
         return self._cases['county'].unique()
 
-    def _create_df_with_rolling(self, df, drop_cols, roll_cols):
-        df = df.drop(columns=drop_cols)
-        if 'updated' in df.columns:
-            df = df.drop(columns='updated')
-        return pd.concat([self._add_rolling_averages(df, county, roll_cols) for county in self._counties])
-
-    @staticmethod
-    def _add_rolling_averages(df, county, roll_cols):
-        df = df[df['county'] == county].copy()
-        for col in roll_cols:
-            df[f'{col}_roll'] = df[col].rolling(7).mean()
-        return df
-
-
-class Runner(Roller):
-    def __init__(self):
-        super().__init__()
-        self.date = None
-        self.message = None
-        self.tricounty = ('Oakland', 'Wayne', 'Macomb')
-
-    def refresh_and_save(self):
-        self.make_requests_and_download()
-        self.process_and_save_remote_files()
-        self.save_rolling()
-
-    def create_plot(self, county: str = None, counties: tuple = None):
-        df = self.tests_rolling.copy()
-        df = df[df.county.isin((county,) if county else counties)].copy()
-        df.index = df.date
-        df = df[['positive_rate', 'positive_rate_roll']]
-        plot = sns.lineplot(data=df, markers=True, palette='deep')
-        fig = plot.get_figure()
-        fig.autofmt_xdate()
-        fig.set_size_inches(12, 8)
-        label = county if county else '-'.join(counties)
-        fig.suptitle(f'Positive rate - {label}')
-        fig.savefig(f'img/{label.lower()}.png')
-
-    def create_message(self):
-        tests_roll = self.tests_rolling.copy()
-        df = tests_roll.loc[tests_roll.county.isin(self.tricounty), [
-            'county', 'date', 'positive_rate', 'positive_rate_roll']].drop_duplicates(subset=['county'], keep='last')
-        for col in ('positive_rate', 'positive_rate_roll'):
-            df[col] = df[col].apply(lambda x: round(x * 100, 1))
-        records = df.to_dict('records')
-        self.date = records[0]['date']
-        self.message = '\n'.join('{county}: {positive_rate_roll}% (7d)'.format(**i) for i in records)
-
 
 def main():
-    runner = Runner()
-    runner.refresh_and_save()
-    runner.create_plot(county='Oakland')
-    runner.create_message()
-    mailer.send_email(subject=runner.date, body=runner.message)
+    r = Roller()
+    r.refresh_and_save()
+    r.create_plot(county='Oakland')
+    r.create_message()
+    mailer.send_email(subject=r.date, body=r.message)
 
 
 if __name__ == '__main__':
