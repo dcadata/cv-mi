@@ -15,7 +15,7 @@ class Scraper:
         self._page_text = None
         self._session = None
 
-    def make_requests_and_download(self):
+    def _make_requests_and_download(self):
         self._session = Session()
         self._make_request_to_main_page()
         self._download_remote_files()
@@ -55,7 +55,7 @@ class Roller(Scraper):
         self.tricounty = ('Oakland', 'Wayne', 'Macomb')
 
     def refresh_and_save(self):
-        self.make_requests_and_download()
+        self._make_requests_and_download()
         self._process_and_save_remote_files()
         self._save_rolling()
 
@@ -101,7 +101,6 @@ class Roller(Scraper):
         cols = dict((col, col.lower().replace('.', '_')) for col in df.columns)
         cols['MessageDate'] = 'date'
         df = df.rename(columns=cols)
-
         df.date = df.date.apply(lambda x: pd.to_datetime(x).date())
         return df
 
