@@ -1,11 +1,12 @@
+from email.mime.text import MIMEText
+from os import environ
+from smtplib import SMTP_SSL
 from time import sleep
 
 import pandas as pd
 import seaborn as sns
 from bs4 import BeautifulSoup
 from requests import Session
-
-import mailer
 
 
 class Scraper:
@@ -140,12 +141,24 @@ class Roller(Scraper):
         return self._cases['county'].unique()
 
 
+def send_email(subject: str, body: str):
+    msg = MIMEText(body)
+    msg['Subject'] = subject
+    msg['From'] = environ['EMAIL_SENDER']
+    msg['To'] = environ['RECIPIENT']
+
+    server = SMTP_SSL(host='smtp.gmail.com', port=465)
+    server.login(environ['EMAIL_SENDER'], environ['EMAIL_PASSWORD'])
+    server.send_message(msg)
+    server.quit()
+
+
 def main():
     r = Roller()
     r.refresh_and_save()
     r.create_plot(county='Oakland')
     r.create_message()
-    mailer.send_email(subject=r.date, body=r.message)
+    send_email(subject=r.date, body=r.message)
 
 
 if __name__ == '__main__':
