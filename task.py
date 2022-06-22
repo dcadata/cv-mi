@@ -145,7 +145,7 @@ def send_email(subject: str, body: str):
     msg = MIMEText(body)
     msg['Subject'] = subject
     msg['From'] = environ['EMAIL_SENDER']
-    msg['To'] = environ['RECIPIENT']
+    msg['To'] = environ['EMAIL_RECIPIENT']
 
     server = SMTP_SSL(host='smtp.gmail.com', port=465)
     server.login(environ['EMAIL_SENDER'], environ['EMAIL_PASSWORD'])
