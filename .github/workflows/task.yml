@@ -1,4 +1,4 @@
-name: Scraper
+name: task
 
 on:
   workflow_dispatch:
@@ -16,9 +16,9 @@ jobs:
       - run: pip3 install -r requirements.txt
       - run: python task.py
         env:
-          RECIPIENT: ${{secrets.RECIPIENT}}
           EMAIL_SENDER: ${{secrets.EMAIL_SENDER}}
           EMAIL_PASSWORD: ${{secrets.EMAIL_PASSWORD}}
+          EMAIL_RECIPIENT: ${{secrets.EMAIL_RECIPIENT}}
       - name: Commit and push if changed
         run: |-
           git config user.name "Actions on behalf of Devon Ankar"
